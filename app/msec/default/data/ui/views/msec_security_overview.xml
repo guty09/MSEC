@@ -1,0 +1,288 @@
+<dashboard version="2" theme="light">
+  <label>MSEC Security Overview</label>
+  <description>Unified SOC overview for Cisco Firepower, Windows Sysmon, and Suricata IDS telemetry.</description>
+  <definition><![CDATA[{
+    "dataSources":  {
+                        "ds_MODaGIbf":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=sysmon SysmonEventID=3\r\n| stats count AS Connections dc(DestinationIp) AS UniqueDestinationIPs dc(DestinationPort) AS UniqueDestinationPorts latest(_time) AS LastSeen by host Image\r\n| sort - Connections\r\n| head 15\r\n| eval LastSeen=strftime(LastSeen,\"%Y-%m-%d %H:%M:%S\")\r\n| table host Image Connections UniqueDestinationIPs UniqueDestinationPorts LastSeen",
+                                                            "queryParameters":  {
+                                                                                    "earliest":  "$global_time.earliest$",
+                                                                                    "latest":  "$global_time.latest$",
+                                                                                    "sampleRatio":  1
+                                                                                }
+                                                        },
+                                            "name":  "Top Processes by Network Connections search"
+                                        },
+                        "ds_AMdmn3ft":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=suricata sourcetype=\"suricata:json\" event_type=alert\r\n| stats count AS \"Suricata Alerts\""
+                                                        },
+                                            "name":  "ds_suricata_alerts"
+                                        },
+                        "ds_tM6w1j0H":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=firewall sourcetype=\"cisco:ftd\"\r\n| stats count AS \"Firepower Events\""
+                                                        },
+                                            "name":  "ds_firepower_events"
+                                        },
+                        "ds_FUOL07ke":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=sysmon\r\n| stats count AS \"Sysmon Events\""
+                                                        },
+                                            "name":  "ds_sysmon_events"
+                                        },
+                        "ds_RBbrU1eH":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "(index=firewall sourcetype=\"cisco:ftd\") OR (index=sysmon) OR (index=suricata sourcetype=\"suricata:json\" event_type=alert)\r\n| eval Sensor=case(\r\n    index==\"firewall\", \"Firepower\",\r\n    index==\"sysmon\", \"Sysmon\",\r\n    index==\"suricata\", \"Suricata Alerts\"\r\n  )\r\n| timechart count by Sensor"
+                                                        },
+                                            "name":  "ds_sensor_activity"
+                                        },
+                        "ds_BMQZGfjr":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=suricata sourcetype=\"suricata:json\" event_type=alert\r\n| rename \"alert.signature\" AS Signature\r\n| where Signature!=\"ET INFO Microsoft Connection Test\"\r\n| stats count AS Alerts by Signature\r\n| sort - Alerts\r\n| head 10"
+                                                        },
+                                            "name":  "ds_top_suricata_signatures"
+                                        },
+                        "ds_dHNB1Rdi":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "index=suricata sourcetype=\"suricata:json\" event_type=alert\r\n| rename \"alert.signature\" AS Signature \"alert.category\" AS Category \"alert.severity\" AS Severity\r\n| where Signature!=\"ET INFO Microsoft Connection Test\"\r\n| table _time src_ip src_port dest_ip dest_port Signature Category Severity in_iface\r\n| sort - _time\r\n| head 100"
+                                                        },
+                                            "name":  "ds_recent_suricata_alerts"
+                                        },
+                        "ds_PVUgdvJX":  {
+                                            "type":  "ds.search",
+                                            "options":  {
+                                                            "query":  "(index=firewall sourcetype=\"cisco:ftd\") OR (index=suricata sourcetype=\"suricata:json\" event_type=alert)\r\n| eval Sensor=case(\r\n    index==\"firewall\",\"Firepower\",\r\n    index==\"suricata\",\"Suricata\"\r\n  )\r\n| eval SourceIP=coalesce(src_ip,SrcIP), DestinationIP=coalesce(dest_ip,DstIP)\r\n| eval IP=mvappend(SourceIP,DestinationIP)\r\n| mvexpand IP\r\n| where isnotnull(IP) AND IP!=\"\"\r\n| stats count AS Events values(Sensor) AS Sensors dc(Sensor) AS SensorCount latest(_time) AS LastSeen by IP\r\n| where SensorCount\u003e=2\r\n| eval LastSeen=strftime(LastSeen,\"%Y-%m-%d %H:%M:%S\")\r\n| fields IP Events Sensors LastSeen\r\n| sort - Events\r\n| head 25"
+                                                        },
+                                            "name":  "ds_firepower_suricata_ip_correlation"
+                                        }
+                    },
+    "visualizations":  {
+                           "viz_ULxHzIHF":  {
+                                                "type":  "splunk.table",
+                                                "options":  {
+                                                                "count":  20,
+                                                                "dataOverlayMode":  "none",
+                                                                "drilldown":  "none",
+                                                                "showRowNumbers":  false,
+                                                                "showInternalFields":  false
+                                                            },
+                                                "dataSources":  {
+                                                                    "primary":  "ds_MODaGIbf"
+                                                                },
+                                                "title":  "Top Processes by Network Connections"
+                                            },
+                           "viz_JDf7GSqn":  {
+                                                "type":  "splunk.singlevalue",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_AMdmn3ft"
+                                                                },
+                                                "title":  "Suricata Alerts",
+                                                "description":  "Network IDS alerts in the selected time range"
+                                            },
+                           "viz_tZn6XyuN":  {
+                                                "type":  "splunk.singlevalue",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_tM6w1j0H"
+                                                                },
+                                                "title":  "Firepower Events",
+                                                "description":  "Cisco Firepower events in the selected time range"
+                                            },
+                           "viz_BkYz7MgJ":  {
+                                                "type":  "splunk.singlevalue",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_FUOL07ke"
+                                                                },
+                                                "title":  "Sysmon Events",
+                                                "description":  "Windows Sysmon events in the selected time range"
+                                            },
+                           "viz_Y2VHrmrO":  {
+                                                "type":  "splunk.line",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_RBbrU1eH"
+                                                                },
+                                                "title":  "Multi-Sensor Activity Over Time",
+                                                "description":  "Firepower, Sysmon, and Suricata activity across the selected time range"
+                                            },
+                           "viz_CvgVJhQh":  {
+                                                "type":  "splunk.bar",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_BMQZGfjr"
+                                                                },
+                                                "title":  "Top Suricata Alert Signatures",
+                                                "description":  "Most frequent IDS detections in the selected time range"
+                                            },
+                           "viz_99VkSiZi":  {
+                                                "type":  "splunk.table",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_dHNB1Rdi"
+                                                                },
+                                                "title":  "Recent Suricata Alerts",
+                                                "description":  "Latest IDS alerts excluding Microsoft connectivity-test noise"
+                                            },
+                           "viz_waEsSluv":  {
+                                                "type":  "splunk.table",
+                                                "dataSources":  {
+                                                                    "primary":  "ds_PVUgdvJX"
+                                                                },
+                                                "title":  "Firepower-Suricata IP Correlation",
+                                                "description":  "IP addresses observed by both network security sensors"
+                                            }
+                       },
+    "applicationProperties":  {
+
+                              },
+    "inputs":  {
+                   "input_global_trp":  {
+                                            "type":  "input.timerange",
+                                            "options":  {
+                                                            "token":  "global_time",
+                                                            "defaultValue":  "-24h@h,now"
+                                                        },
+                                            "title":  "Global Time Range"
+                                        }
+               },
+    "layout":  {
+                   "options":  {
+
+                               },
+                   "globalInputs":  [
+                                        "input_global_trp"
+                                    ],
+                   "tabs":  {
+                                "items":  [
+                                              {
+                                                  "layoutId":  "layout_1",
+                                                  "label":  "Security Overview"
+                                              }
+                                          ]
+                            },
+                   "layoutDefinitions":  {
+                                             "layout_1":  {
+                                                              "type":  "grid",
+                                                              "structure":  [
+                                                                                {
+                                                                                    "item":  "viz_JDf7GSqn",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  0,
+                                                                                                     "w":  547,
+                                                                                                     "h":  209
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_tZn6XyuN",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  547,
+                                                                                                     "y":  0,
+                                                                                                     "w":  435,
+                                                                                                     "h":  209
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_BkYz7MgJ",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  982,
+                                                                                                     "y":  0,
+                                                                                                     "w":  458,
+                                                                                                     "h":  209
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_Y2VHrmrO",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  209,
+                                                                                                     "w":  1440,
+                                                                                                     "h":  400
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_CvgVJhQh",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  609,
+                                                                                                     "w":  1440,
+                                                                                                     "h":  400
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_99VkSiZi",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  1009,
+                                                                                                     "w":  1440,
+                                                                                                     "h":  400
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_waEsSluv",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  1409,
+                                                                                                     "w":  1440,
+                                                                                                     "h":  400
+                                                                                                 }
+                                                                                },
+                                                                                {
+                                                                                    "item":  "viz_ULxHzIHF",
+                                                                                    "type":  "block",
+                                                                                    "position":  {
+                                                                                                     "x":  0,
+                                                                                                     "y":  1809,
+                                                                                                     "w":  1440,
+                                                                                                     "h":  300
+                                                                                                 }
+                                                                                }
+                                                                            ],
+                                                              "options":  {
+                                                                              "width":  1440,
+                                                                              "height":  960
+                                                                          }
+                                                          }
+                                         }
+               },
+    "title":  "MSEC Security Overview",
+    "description":  "Unified SOC overview for Cisco Firepower, Windows Sysmon, and Suricata IDS telemetry.",
+    "defaults":  {
+                     "dataSources":  {
+                                         "ds.search":  {
+                                                           "options":  {
+                                                                           "queryParameters":  {
+                                                                                                   "latest":  "$global_time.latest$",
+                                                                                                   "earliest":  "$global_time.earliest$"
+                                                                                               }
+                                                                       }
+                                                       },
+                                         "ds.spl2":  {
+                                                         "options":  {
+                                                                         "queryParameters":  {
+                                                                                                 "latest":  "$global_time.latest$",
+                                                                                                 "earliest":  "$global_time.earliest$"
+                                                                                             }
+                                                                     }
+                                                     }
+                                     },
+                     "visualizations":  {
+                                            "global":  {
+                                                           "showProgressBar":  true
+                                                       }
+                                        }
+                 }
+}]]></definition>
+</dashboard>
