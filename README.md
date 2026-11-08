@@ -188,3 +188,11 @@ Firepower-Suricata IP overlap and Sysmon process network activity.
 A controlled Suricata test alert ingested into Splunk.
 
 ![IDS test validation](evidence/screenshots/suricata-test-alert-in-splunk.png)
+
+## Three-Sensor Investigation Case Study
+
+Two DNS connections matched across Firepower, Suricata, and Sysmon, identifying Discord.exe within a 3.327-second timestamp span.
+
+[Read the investigation, evidence, and reproducible SPL](case-studies/three-sensor-dns-correlation.md)
+
+![Three-sensor DNS correlation](evidence/screenshots/msec-three-sensor-dns-correlation.png)
