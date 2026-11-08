@@ -162,3 +162,29 @@ The searches use `transaction` and were validated at home-lab scale. Larger depl
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Screenshots
+
+### Security Overview
+
+Event counts and activity across Firepower, Suricata, and Sysmon.
+
+![MSEC security overview](evidence/screenshots/msec-security-overview.png)
+
+### Suricata Alerts
+
+Top signatures and recent IDS alerts.
+
+![Suricata alerts](evidence/screenshots/msec-suricata-alerts.png)
+
+### Process and Network Visibility
+
+Firepower-Suricata IP overlap and Sysmon process network activity.
+
+![Process and network activity](evidence/screenshots/msec-process-network-activity.png)
+
+### IDS Test Validation
+
+A controlled Suricata test alert ingested into Splunk.
+
+![IDS test validation](evidence/screenshots/suricata-test-alert-in-splunk.png)
