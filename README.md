@@ -77,14 +77,14 @@ The correlated records spanned **3.327 seconds**.
 
 This demonstrates evidence correlation. The informational signatures do not, by themselves, establish malicious activity.
 
-The three-sensor search and supporting evidence will be added in a subsequent documentation update.
+The three-sensor search, findings, and screenshot are published in the [Discord DNS case study](case-studies/three-sensor-dns-correlation.md).
 
 ## Detection Content
 
 | Rule | Purpose | Validation |
 |---|---|---|
 | OneStart Execution After Removal | Identify process creation from the OneStart.ai directory for possible recurrence | Matched 11 historical executions in the selected test window; recent search returned zero matches; scheduled execution verified |
-| PowerShell Connection Corroborated by Firepower | Associate PowerShell TCP activity with matching firewall connection records within ten seconds | Historical match verified with a 2.73-second span; scheduled execution returned one match; controlled-test result review pending |
+| PowerShell Connection Corroborated by Firepower | Associate PowerShell TCP activity with matching firewall connection records within ten seconds | Historical match verified with a 2.73-second span; live controlled connection to 1.1.1.1:443 verified in scheduled alert results |
 
 Both rules include a five-minute schedule, ten-minute search window, and one-hour throttling by endpoint.
 
@@ -145,12 +145,11 @@ This case demonstrates progression from telemetry review to investigation, remed
 
 ## Remaining Work
 
-- Review the controlled PowerShell test's correlated result.
-- Publish the three-sensor search, selected screenshots, and CSV evidence.
-- Document a reusable investigation workflow.
-- Validate installation on a separate instance.
-- Test correlation performance and detection limitations more broadly.
+- Document a reusable investigation workflow based on the completed case studies.
+- Validate the exported app in an isolated installation.
+- Package a versioned release with validation results and known limitations.
 
+Broader attack coverage and performance testing are future improvements.
 ## Limitations
 
 Correlation depends on telemetry coverage, timestamp alignment, and matching connection details. Missing matches do not prove that activity did not occur.
