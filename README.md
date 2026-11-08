@@ -196,3 +196,11 @@ Two DNS connections matched across Firepower, Suricata, and Sysmon, identifying 
 [Read the investigation, evidence, and reproducible SPL](case-studies/three-sensor-dns-correlation.md)
 
 ![Three-sensor DNS correlation](evidence/screenshots/msec-three-sensor-dns-correlation.png)
+
+## OneStart Three-Sensor Investigation
+
+Sysmon attributed a TCP connection to OneStart's installer. Firepower corroborated the connection, and Suricata recorded an HTTP POST and a 200 response.
+
+[Read the evidence timeline, investigation, and limitations](case-studies/onestart-three-sensor-investigation.md)
+
+![OneStart three-sensor evidence timeline](evidence/screenshots/msec-onestart-three-sensor-timeline.png)
