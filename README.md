@@ -182,7 +182,31 @@ Cisco Firepower did not observe the scan because the attacker and target were on
 
 Sysmon visibility was not confirmed.
 
-A future controlled test will place the attacker on a separate network and evaluate telemetry visibility across the firewall, network sensor, and endpoint.
+The subsequent [controlled Kali SMB test](case-studies/kali-smb-three-sensor-correlation.md) verified connection evidence across all three sensors.
+
+## Controlled Kali SMB Test — Three-Sensor Correlation
+
+A controlled outside-to-inside TCP 445 test on November 8, 2026 verified the same connection across Firepower, Suricata, and Sysmon in Splunk MSEC.
+
+**Connection:** TCP `192.168.1.109:53052` → `192.168.95.164:445`.
+
+| Sensor | Evidence |
+|---|---|
+| Firepower | Connection 4132881 creation and teardown |
+| Suricata | Matching bidirectional flow; no IDS alert |
+| Sysmon | Event ID 3; inbound connection attributed to System, PID 4 |
+
+The investigation documented NAT troubleshooting, scoped firewall and Sysmon logging changes, and restoration of log forwarding. Temporary access was removed and the original Sysmon configuration restored.
+
+This validates connection-level correlation, not exploitation or endpoint compromise.
+
+[Read the Complete SMB Correlation Case Study](case-studies/kali-smb-three-sensor-correlation.md)
+
+[View the Four-Event CSV](evidence/exports/MSEC-Kali-SMB-Three-Sensor-53052.csv)
+
+![Initial NAT Denial](evidence/screenshots/msec-kali-smb-nat-denied.png)
+
+![Verified Three-Sensor Correlation](evidence/screenshots/msec-kali-smb-three-sensor-correlation.png)
 
 ## Telemetry Requirements
 
@@ -257,7 +281,7 @@ Existing `local` configuration can override settings in `default`. Back up and c
 
 ## Future Development
 
-- Validate external-to-internal attack scenarios through Cisco Firepower.
+- Expand outside-to-inside testing beyond the validated TCP 445 scenario.
 - Expand multi-sensor detection correlation.
 - Introduce entity-based risk scoring.
 - Develop reusable investigation playbooks.
